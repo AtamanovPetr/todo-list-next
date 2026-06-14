@@ -3,6 +3,7 @@ import { auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { AuthProvider } from "@/context/AuthContext";
 export default function ClientLayout({
   children,
 }: Readonly<{
@@ -36,7 +37,7 @@ export default function ClientLayout({
           </Link>
         </div>
       </div>
-      {children}
+      <AuthProvider userId={userId}>{children}</AuthProvider>
     </>
   );
 }

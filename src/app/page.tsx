@@ -13,26 +13,14 @@ import {
   loadTodos,
   saveTodos,
   deleteTodoFromCloud,
-  auth,
   logout,
 } from "@/firebase";
-import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
+import { useAuth } from "@/context/AuthContext";
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
-  const [userId, setUserId] = useState<string | null>(null);
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (user != null) {
-        setUserId(user.uid);
-        localStorage.removeItem("todos");
-      } else {
-        setUserId(null);
-      }
-    });
-    return () => unsubscribe();
-  }, []);
+  const { userId } = useAuth();
   useEffect(() => {
     const load = async () => {
       if (userId) {
@@ -138,7 +126,7 @@ export default function Home() {
   async function handleLogin() {
     const uid = await loginWithGoogle();
     if (uid) {
-      setUserId(uid);
+      window.location.reload();
     }
   }
   return (
@@ -156,7 +144,7 @@ export default function Home() {
                     await saveTodos(userId, todos); // дожидаемся сохранения перед выходом
                   }
                   await logout();
-                  setUserId(null);
+                  window.location.reload();
                 }}
               >
                 Выйти
