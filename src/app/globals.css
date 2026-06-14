@@ -1,0 +1,544 @@
+* {
+  box-sizing: border-box;
+}
+:root {
+  --bg: #1e1e2f;
+  --card-bg: rgba(20, 20, 30, 0.75);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #e0e0e0;
+  --text-secondary: #e9e9f1;
+  --accent: #8b5cf6;
+  --btn-bg: #2d2d3f;
+  --btn-hover-bg: #3d3d5c;
+  --danger: #ef4444;
+}
+
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  background-color: var(--bg);
+  color: var(--text-primary);
+}
+.container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 50px;
+}
+.todo-form {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--card-border);
+}
+.todo-input {
+  flex: 1;
+  padding: 16px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  box-shadow: 0 1px 10px rgba(89, 18, 253, 0.4);
+  transition: all 0.2s ease;
+}
+.todo-input:focus {
+  background-color: #161414;
+  outline: none;
+}
+.todo-btn {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+  transition: all 0.2s ease;
+}
+.todo-btn:hover {
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+  transform: translateY(-1px);
+}
+.todo-list {
+  flex: 1;
+}
+.todo-item {
+  display: flex;
+  align-items: center;
+  padding: 20px;
+  border-radius: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  margin-bottom: 8px;
+  transition:
+    0.3s transform,
+    0.5s box-shadow;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  transform: 0.3s ease;
+  max-height: 100px; /* достаточно, чтобы вместить содержимое */
+  overflow: hidden;
+}
+.todo-item--removing {
+  max-height: 0;
+  opacity: 0;
+  padding: 0;
+  margin-bottom: 0;
+}
+.todo-item:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2);
+}
+.todo-item__checkbox {
+  margin-right: 15px;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid #d1cccc;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.todo-item__checkbox:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.todo-item__checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #fff;
+  font-size: 14px;
+  font-weight: bold;
+}
+.todo-item__text {
+  font-size: 25px;
+  flex: 1;
+}
+.todo-item__text--completed {
+  text-decoration: line-through;
+  color: gray;
+}
+.todo-item__delete {
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 25px;
+  cursor: pointer;
+}
+.todo-item__delete:hover {
+  color: var(--danger);
+}
+
+.main {
+  padding-top: 70px;
+}
+
+.filter-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 15px 30px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+.filter-btn:last-child {
+  background: none;
+  border: none;
+}
+
+.filter-btn:hover {
+  background: var(--btn-hover-bg);
+  color: var(--text-primary);
+}
+
+.filter-btn--active {
+  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.filter-btn--active:hover {
+  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+}
+
+.todo-title {
+  text-align: center;
+  font-size: 50px;
+  margin-top: 0;
+  transition: 0.3s all;
+  background: linear-gradient(135deg, #ffffff 0%, #a855f7 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Заголовок архива */
+.archive h2 {
+  margin-top: 40px;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+/* Элемент списка — одна строка с датой и счётчиком */
+.archive-item {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  margin-bottom: 8px;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+/* Эффект при наведении */
+.archive-item:hover {
+  background: var(--btn-hover-bg);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Дата */
+.archive-item__date {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Счётчик задач */
+.archive-item__count {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Контейнер раскрытых задач */
+.archive-tasks {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--card-border);
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition:
+    max-height 0.4s ease,
+    opacity 0.3s ease,
+    margin-top 0.3s ease;
+  margin-top: 0;
+}
+.archive-tasks--expanded {
+  max-height: 1000px; /* достаточно большое, чтобы вместить все задачи */
+  opacity: 1;
+  margin-top: 12px;
+}
+
+/* Одна задача в архиве */
+.archive-tasks__item {
+  padding: 8px 0;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.archive-tasks__item::before {
+  content: "✓";
+  color: var(--accent);
+  font-weight: bold;
+}
+
+.archive-item__clear {
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgb(212, 76, 76);
+  background: transparent;
+  color: rgb(212, 76, 76);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.archive-item__clear:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.dashboard-card {
+  width: 350px;
+  background: var(--card-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+  perspective: 800px;
+}
+
+.dashboard-card:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.2);
+}
+
+.dashboard-title {
+  margin: 0 0 16px;
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.chart-wrapper {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+
+.chart-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  font-weight: bold;
+  color: #5cf65c;
+  pointer-events: none;
+}
+
+.dashboard-stats {
+  margin-top: 12px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.main-content {
+  display: flex;
+  gap: 50px;
+  justify-content: space-between;
+}
+
+/* Центрирование и стилизация окна входа */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+}
+
+/* Заголовок */
+.login-title {
+  font-size: 2rem;
+  margin-bottom: 12px;
+  color: var(--text-primary);
+}
+
+/* Подзаголовок (можно добавить под заголовком) */
+.login-subtitle {
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+  font-size: 1rem;
+}
+
+/* Кнопка входа (увеличиваем, делаем заметнее) */
+.login-btn {
+  padding: 16px 32px;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);
+}
+
+.login-btn:hover {
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.6);
+  transform: translateY(-2px);
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--card-border);
+  margin-bottom: 24px;
+}
+
+.app-logo {
+  font-size: 1.5rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.auth-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.auth-user {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.auth-btn {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-btn:hover {
+  background: var(--btn-hover-bg);
+}
+
+.nav-links {
+  display: flex;
+  gap: 24px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  padding: 8px 0;
+}
+
+.nav-link {
+  position: relative;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 6px 0;
+  transition: color 0.3s ease;
+  letter-spacing: 0.3px;
+}
+
+/* Эффект подчёркивания при наведении */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(135deg, var(--accent), #6d28d9);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.nav-link:hover {
+  color: #fff;
+  opacity: 1;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Для активной ссылки (когда пользователь на этой странице) */
+.nav-link.active {
+  color: var(--accent);
+}
+
+.nav-link.active::after {
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .todo-form {
+    padding-bottom: 50px;
+  }
+  .main-content {
+    flex-direction: column;
+  }
+  .dashboard-card {
+    width: 100%;
+  }
+  .filter-buttons {
+    margin-top: 50px;
+  }
+}
+@media (max-width: 700px) {
+  .filter-buttons {
+    flex-direction: column;
+    max-height: 150px;
+  }
+  .filter-btn {
+    width: 50%;
+  }
+  .archive-item {
+    flex-wrap: wrap;
+  }
+}
+@media (max-width: 495px) {
+  .container {
+    padding: 0px 20px;
+  }
+  .todo-form {
+    flex-direction: column;
+  }
+  .todo-input {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  .todo-btn {
+    width: 100%;
+    padding: 20px 30px;
+  }
+  .filter-buttons {
+    flex-direction: column;
+    max-height: inherit;
+  }
+  .filter-btn {
+    width: 100%;
+  }
+}
+@media (max-width: 400px) {
+  .todo-title {
+    font-size: 40px;
+  }
+  .filter-buttons {
+    margin-bottom: 40px;
+  }
+}
+@media (max-width: 350px) {
+  .archive-item__clear {
+    margin: 15px 0px 0px 10px;
+    width: 100%;
+    padding: 18px 10px;
+  }
+}
