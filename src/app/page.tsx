@@ -20,7 +20,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Home() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [filter, setFilter] = useState<FilterType>("all");
-  const { userId } = useAuth();
+  const { userId, archiveTodos, addToArchive } = useAuth();
   useEffect(() => {
     const load = async () => {
       if (userId) {
@@ -71,17 +71,23 @@ export default function Home() {
   }
   function handleToggle(id: string) {
     setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id
-          ? {
-              ...todo,
-              completed: !todo.completed,
-              completedDate: todo.completed
-                ? null
-                : new Date().toLocaleDateString("ru-RU"),
-            }
-          : todo,
-      ),
+      prev.map((todo) => {
+        if (todo.id === id) {
+          const newItem = {
+            ...todo,
+            completed: !todo.completed,
+            completedDate: todo.completed
+              ? null
+              : new Date().toLocaleDateString("ru-RU"),
+          };
+          if (!todo.completed) {
+            addToArchive(newItem);
+          }
+          return newItem;
+        } else {
+          return todo;
+        }
+      }),
     );
   }
   async function handleDelete(id: string) {
@@ -171,7 +177,6 @@ export default function Home() {
         />
         <Dashboard todos={todos} />
       </div>
-      <Archive onClearDate={handleClearDate} todos={todos} />
     </div>
   );
 }

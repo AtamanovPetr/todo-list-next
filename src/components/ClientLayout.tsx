@@ -4,12 +4,14 @@ import { onAuthStateChanged } from "firebase/auth";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { AuthProvider } from "@/context/AuthContext";
+import type { Todo } from "@/types";
 export default function ClientLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   const [userId, setUserId] = useState<string | null>(null);
+  const [archiveTodos, setArchiveTodos] = useState<Todo[]>([]);
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user != null) {

@@ -1,45 +1,32 @@
 "use client";
-import { useState, useEffect } from "react";
-import Archive from "@/components/Archive";
-import type { Todo } from "@/types";
 import { useAuth } from "@/context/AuthContext";
-import { loadTodos } from "@/firebase";
-import {
-  loginWithGoogle,
-  saveTodos,
-  deleteTodoFromCloud,
-  logout,
-} from "@/firebase";
+import { deleteTodoFromCloud } from "@/firebase";
+import Archive from "@/components/Archive";
+
 export default function ArchivePage() {
-  const [todos, setTodos] = useState<Todo[]>([]);
-  const { userId } = useAuth();
-  useEffect(() => {
-    const load = async () => {
-      if (userId) {
-        const state = await loadTodos(userId);
-        setTodos(state);
-      } else {
-        const saved = localStorage.getItem("todos");
-        if (saved) setTodos(JSON.parse(saved));
-      }
-    };
-    load();
-  }, [userId]);
+  const { userId, archiveTodos, removeFromArchive } = useAuth();
+
   async function handleClearDate(date: string) {
-    setTodos(todos.filter((todo) => todo.completedDate !== date));
+    const tasksToDelete = archiveTodos.filter(
+      (todo) => todo.completedDate === date,
+    );
+
+    // Удаляем из локального архива
+    tasksToDelete.forEach((todo) => removeFromArchive(todo.id));
+
+    // Удаляем из облака, если авторизованы
     if (userId) {
-      let Massiv = todos.filter((todo) => todo.completedDate === date);
       await Promise.all(
-        Massiv.map((item) => {
-          return deleteTodoFromCloud(userId, item.id);
-        }),
+        tasksToDelete.map((todo) => deleteTodoFromCloud(userId, todo.id)),
       );
     }
   }
+
   return (
     <div className="container">
-      <h1 className="page-title">Архив</h1>
-      <Archive todos={todos} onClearDate={handleClearDate} />
+      {" "}
+      <h1 className="page-title">Архив</h1>{" "}
+      <Archive todos={archiveTodos} onClearDate={handleClearDate} />{" "}
     </div>
   );
 }
