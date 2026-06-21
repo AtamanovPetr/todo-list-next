@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import type { Todo, FilterType } from "../types";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useReducer } from "react";
 import AddTodoForm from "../components/AddTodoForm";
 import Archive from "../components/Archive";
 import Dashboard from "../components/Dashboard";
@@ -17,34 +17,37 @@ import {
 } from "@/firebase";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import todosReducer from "@/reducers/todosReducer";
 export default function Home() {
-  const [todos, setTodos] = useState<Todo[]>([]);
+  const [todos, dispatch] = useReducer(todosReducer, []);
   const [filter, setFilter] = useState<FilterType>("all");
   const { userId, archiveTodos, addToArchive } = useAuth();
   useEffect(() => {
     const load = async () => {
       if (userId) {
         const state = await loadTodos(userId);
-        setTodos(
-          state.filter(
+        dispatch({
+          type: "SET_TODOS",
+          payload: state.filter(
             (item: Todo) =>
               item.completedDate != null ||
               (!item.completed &&
                 item.createdAt === new Date().toLocaleDateString("ru-RU")),
           ),
-        );
+        });
       } else {
         const saved = localStorage.getItem("todos");
         if (saved) {
           const state = JSON.parse(saved);
-          setTodos(
-            state.filter(
+          dispatch({
+            type: "SET_TODOS",
+            payload: state.filter(
               (item: Todo) =>
                 item.completedDate != null ||
                 (!item.completed &&
                   item.createdAt === new Date().toLocaleDateString("ru-RU")),
             ),
-          );
+          });
         }
       }
     };
@@ -67,31 +70,22 @@ export default function Home() {
       completedDate: null,
       createdAt: new Date().toLocaleDateString("ru-RU"),
     };
-    setTodos((prev) => [...prev, newTodo]);
+    dispatch({ type: "ADD_TODO", payload: newTodo });
   }
   function handleToggle(id: string) {
-    setTodos((prev) =>
-      prev.map((todo) => {
-        if (todo.id === id) {
-          const newItem = {
-            ...todo,
-            completed: !todo.completed,
-            completedDate: todo.completed
-              ? null
-              : new Date().toLocaleDateString("ru-RU"),
-          };
-          if (!todo.completed) {
-            addToArchive(newItem);
-          }
-          return newItem;
-        } else {
-          return todo;
-        }
-      }),
-    );
+    const todo = todos.find((t) => t.id === id);
+    if (todo && !todo.completed) {
+      const updatedTodo = {
+        ...todo,
+        completed: true,
+        completedDate: new Date().toLocaleDateString("ru-RU"),
+      };
+      addToArchive(updatedTodo);
+    }
+    dispatch({ type: "TOGGLE_TODO", payload: { id } });
   }
   async function handleDelete(id: string) {
-    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+    dispatch({ type: "DELETE_TODO", payload: { id } });
     if (userId) {
       await deleteTodoFromCloud(userId, id);
     }
@@ -108,7 +102,7 @@ export default function Home() {
     return filtered;
   }, [todos, filter]);
   async function handleClearAll() {
-    setTodos([]);
+    dispatch({ type: "SET_TODOS", payload: [] });
     if (userId) {
       await Promise.all(
         todos.map((item) => {
@@ -119,7 +113,10 @@ export default function Home() {
   }
 
   async function handleClearDate(date: string) {
-    setTodos(todos.filter((todo) => todo.completedDate !== date));
+    dispatch({
+      type: "SET_TODOS",
+      payload: todos.filter((todo) => todo.completedDate !== date),
+    });
     if (userId) {
       let Massiv = todos.filter((todo) => todo.completedDate === date);
       await Promise.all(

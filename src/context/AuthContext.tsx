@@ -31,15 +31,18 @@ export function AuthProvider({
     setArchiveTodos((prev) => prev.filter((item) => item.id != id));
   }
   useEffect(() => {
-    const saved = localStorage.getItem("archiveTodos");
+    const key = `archive_${userId || "guest"}`;
+    const saved = localStorage.getItem(key);
     if (saved) {
-      const state = JSON.parse(saved);
-      setArchiveTodos(state);
+      setArchiveTodos(JSON.parse(saved));
+    } else {
+      setArchiveTodos([]);
     }
-  }, []);
+  }, [userId]);
   useEffect(() => {
-    localStorage.setItem("archiveTodos", JSON.stringify(archiveTodos));
-  }, [archiveTodos]);
+    const key = `archive_${userId || "guest"}`;
+    localStorage.setItem(key, JSON.stringify(archiveTodos));
+  }, [archiveTodos, userId]);
   return (
     <AuthContext.Provider
       value={{ userId, archiveTodos, addToArchive, removeFromArchive }}
