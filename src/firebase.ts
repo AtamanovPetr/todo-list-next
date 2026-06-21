@@ -66,3 +66,24 @@ export const saveTodos = async (userId: string, todos: Todo[]) => {
 export const logout = async () => {
   await signOut(auth);
 };
+
+export const loadArchiveTodos = async (userId: string): Promise<Todo[]> => {
+  const archiveRef = collection(db, "users", userId, "archive");
+  const snapshot = await getDocs(archiveRef);
+  const todos: Todo[] = [];
+  snapshot.forEach((doc) => {
+    todos.push({ id: doc.id, ...doc.data() } as Todo);
+  });
+  return todos;
+};
+
+export const saveArchiveTodo = async (userId: string, todo: Todo) => {
+  const docRef = doc(db, "users", userId, "achive", todo.id);
+  const { id, ...data } = todo;
+  await setDoc(docRef, data);
+};
+
+export const deleteArchiveTodo = async (userId: string, todoId: string) => {
+  const docRef = doc(db, "users", userId, "archive", todoId);
+  await deleteDoc(docRef);
+};

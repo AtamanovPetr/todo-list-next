@@ -1,6 +1,11 @@
 "use client";
 import { useContext, createContext, useState, useEffect } from "react";
 import type { Todo } from "@/types";
+import {
+  deleteArchiveTodo,
+  loadArchiveTodos,
+  saveArchiveTodo,
+} from "@/firebase";
 
 interface AuthContextType {
   userId: string | null;
@@ -19,6 +24,9 @@ export function AuthProvider({
 }) {
   const [archiveTodos, setArchiveTodos] = useState<Todo[]>([]);
   function addToArchive(todo: Todo) {
+    if (userId) {
+      saveArchiveTodo(userId, todo);
+    }
     setArchiveTodos((prev) => {
       if (prev.some((item) => item.id === todo.id)) {
         return prev;
@@ -29,20 +37,17 @@ export function AuthProvider({
   }
   function removeFromArchive(id: string) {
     setArchiveTodos((prev) => prev.filter((item) => item.id != id));
+    if (userId) {
+      deleteArchiveTodo(userId, id);
+    }
   }
   useEffect(() => {
-    const key = `archive_${userId || "guest"}`;
-    const saved = localStorage.getItem(key);
-    if (saved) {
-      setArchiveTodos(JSON.parse(saved));
+    if (userId) {
+      loadArchiveTodos(userId).then(setArchiveTodos);
     } else {
       setArchiveTodos([]);
     }
   }, [userId]);
-  useEffect(() => {
-    const key = `archive_${userId || "guest"}`;
-    localStorage.setItem(key, JSON.stringify(archiveTodos));
-  }, [archiveTodos, userId]);
   return (
     <AuthContext.Provider
       value={{ userId, archiveTodos, addToArchive, removeFromArchive }}
