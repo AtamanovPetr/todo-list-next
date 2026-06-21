@@ -44,8 +44,6 @@ export function AuthProvider({
   useEffect(() => {
     if (userId) {
       loadArchiveTodos(userId).then(setArchiveTodos);
-    } else {
-      setArchiveTodos([]);
     }
   }, [userId]);
   return (

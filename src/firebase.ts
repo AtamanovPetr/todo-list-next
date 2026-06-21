@@ -78,7 +78,7 @@ export const loadArchiveTodos = async (userId: string): Promise<Todo[]> => {
 };
 
 export const saveArchiveTodo = async (userId: string, todo: Todo) => {
-  const docRef = doc(db, "users", userId, "achive", todo.id);
+  const docRef = doc(db, "users", userId, "archive", todo.id);
   const { id, ...data } = todo;
   await setDoc(docRef, data);
 };
