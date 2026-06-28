@@ -18,14 +18,18 @@ import {
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import todosReducer from "@/reducers/todosReducer";
+import { log } from "console";
 export default function Home() {
   const [todos, dispatch] = useReducer(todosReducer, []);
   const [filter, setFilter] = useState<FilterType>("all");
   const { userId, archiveTodos, addToArchive } = useAuth();
+  console.log("Мой userId:", userId);
   useEffect(() => {
     const load = async () => {
       if (userId) {
-        const state = await loadTodos(userId);
+        const response = await fetch(`/api/todos?userId=${userId}`);
+        if (!response.ok) throw new Error("Failed to fetch");
+        const state = await response.json();
         dispatch({
           type: "SET_TODOS",
           payload: state.filter(
@@ -53,16 +57,7 @@ export default function Home() {
     };
     load();
   }, [userId]);
-  useEffect(() => {
-    if (userId) {
-      saveTodos(userId, todos);
-    } else {
-      if (todos.length > 0) {
-        localStorage.setItem("todos", JSON.stringify(todos));
-      }
-    }
-  }, [todos, userId]);
-  function handleAddTodo(text: string) {
+  async function handleAddTodo(text: string) {
     const newTodo: Todo = {
       id: crypto.randomUUID(),
       text: text,
@@ -71,9 +66,21 @@ export default function Home() {
       createdAt: new Date().toLocaleDateString("ru-RU"),
     };
     dispatch({ type: "ADD_TODO", payload: newTodo });
+    const response = await fetch(`/api/todos?userId=${userId}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: crypto.randomUUID(),
+        text: text,
+        completed: false,
+        completedDate: null,
+        createdAt: new Date().toLocaleDateString("ru-RU"),
+      }),
+    });
   }
   function handleToggle(id: string) {
     const todo = todos.find((t) => t.id === id);
+    if (!todo) return;
     if (todo && !todo.completed) {
       const updatedTodo = {
         ...todo,
@@ -83,11 +90,32 @@ export default function Home() {
       addToArchive(updatedTodo);
     }
     dispatch({ type: "TOGGLE_TODO", payload: { id } });
+    if (userId) {
+      fetch(`/api/todos`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          completed: !todo.completed,
+          completedDate: todo.completed
+            ? null
+            : new Date().toLocaleDateString("ru-RU"),
+          id,
+        }),
+      });
+    }
   }
   async function handleDelete(id: string) {
     dispatch({ type: "DELETE_TODO", payload: { id } });
     if (userId) {
-      await deleteTodoFromCloud(userId, id);
+      try {
+        await fetch(`/api/todos`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id }),
+        });
+      } catch {
+        console.log("Ты никита у тебя ошибка");
+      }
     }
   }
   const filteredTodos = useMemo(() => {
@@ -106,7 +134,11 @@ export default function Home() {
     if (userId) {
       await Promise.all(
         todos.map((item) => {
-          return deleteTodoFromCloud(userId, item.id);
+          fetch(`/api/todos`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: item.id }),
+          });
         }),
       );
     }
@@ -121,7 +153,11 @@ export default function Home() {
       let Massiv = todos.filter((todo) => todo.completedDate === date);
       await Promise.all(
         Massiv.map((item) => {
-          return deleteTodoFromCloud(userId, item.id);
+          fetch(`/api/todos`, {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: item.id }),
+          });
         }),
       );
     }
