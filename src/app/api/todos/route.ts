@@ -7,6 +7,7 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: "useId is required" }, { status: 400 });
   }
   try {
+    console.error("DATABASE_URL:", process.env.DATABASE_URL);
     const todos = await prisma.todo.findMany({ where: { userId: userId } });
     return NextResponse.json(todos);
   } catch (error) {
