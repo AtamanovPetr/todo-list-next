@@ -23,7 +23,6 @@ export default function Home() {
   const [todos, dispatch] = useReducer(todosReducer, []);
   const [filter, setFilter] = useState<FilterType>("all");
   const { userId, archiveTodos, addToArchive } = useAuth();
-  console.log("Мой userId:", userId);
   useEffect(() => {
     const load = async () => {
       if (userId) {
